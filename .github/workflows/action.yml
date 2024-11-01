@@ -28,9 +28,9 @@ jobs:
 
       - name: Create GitHub Releases
         id: create_releases
-        uses: actions/create-release@v4
+        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: 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
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Releases ${{ github.ref_name }}
@@ -40,7 +40,7 @@ jobs:
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: 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
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./releases/folder.zip
