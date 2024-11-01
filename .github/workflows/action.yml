@@ -1,4 +1,4 @@
-name: "action"
+name: "WPOven Plugin Release"
 on:
   pull_request:
     branches:
@@ -10,21 +10,50 @@ on:
 
 jobs:
   release:
+    if: startsWith(github.ref, 'refs/heads/releases/')
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js (if needed)
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Or the version you need
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Check if release exists
+        id: check_release
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME")
+          if [ "$HTTP_STATUS" -eq "200" ]; then
+            echo "Release already exists for $TAG_NAME"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Release does not exist for $TAG_NAME"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Delete existing release if exists
+        if: steps.check_release.outputs.exists == 'true'
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          RELEASE_ID=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
+            jq -r .id)
+          curl -X DELETE \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
 
       - name: Zip the wpoven-plugin-switcher
         run: |
           mkdir -p releases
-          zip -r releases/wpoven-plugin-switcher.zip source  # Replace 'wpoven-plugin-switcher' with the actual wpoven-plugin-switcher
+          zip -r releases/wpoven-plugin-switcher.zip source || exit 1
 
       - name: Create GitHub Release
         id: create_release
@@ -33,7 +62,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
-          release_name: Releases ${{ github.ref_name }}
+          release_name: WPOven Plugin Switcher ${{ github.ref_name }}
+          body: |
+            WPOven Plugin Switcher Release ${{ github.ref_name }}
+            
+            This release was automatically created by GitHub Actions.
           draft: false
           prerelease: false
 
