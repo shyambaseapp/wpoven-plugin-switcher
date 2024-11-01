@@ -1,78 +1,42 @@
-name: "WPOven Plugin Release"
+name: Create Zip Release
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
-      - main
-      - "releases/*"
+      - main  # or your default branch name
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Check if release exists
-        id: check_release
+      - name: Create zip file
         run: |
-          TAG_NAME="${{ github.ref_name }}"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME")
-          if [ "$HTTP_STATUS" -eq "200" ]; then
-            echo "Release already exists for $TAG_NAME"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Release does not exist for $TAG_NAME"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
+          # Create a zip file of the entire repository
+          # Excluding .git directory and GitHub workflows
+          zip -r release.zip . -x "*.git*" ".github/workflows/*"
+          # If you want to zip only a specific folder, use:
+          # zip -r release.zip source/
 
-      - name: Delete existing release if exists
-        if: steps.check_release.outputs.exists == 'true'
-        run: |
-          TAG_NAME="${{ github.ref_name }}"
-          RELEASE_ID=$(curl -s \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
-            jq -r .id)
-          curl -X DELETE \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
-
-      - name: Zip the wpoven-plugin-switcher
-        run: |
-          mkdir -p releases
-          zip -r releases/wpoven-plugin-switcher.zip source || exit 1
-
-      - name: Create GitHub Release
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: WPOven Plugin Switcher ${{ github.ref_name }}
-          body: |
-            WPOven Plugin Switcher Release ${{ github.ref_name }}
-            
-            This release was automatically created by GitHub Actions.
+          tag_name: release-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
 
-      - name: Upload release asset
+      - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./releases/wpoven-plugin-switcher.zip
-          asset_name: wpoven-plugin-switcher.zip
+          asset_path: ./release.zip
+          asset_name: release.zip
           asset_content_type: application/zip
