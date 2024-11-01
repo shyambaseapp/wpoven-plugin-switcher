@@ -11,31 +11,29 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Set up Node.js (if needed)
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
-          cache: 'npm'  # Enable npm caching
+          node-version: '16'  # Or the version you need
 
-      - name: Create releases directory and zip folder
+      - name: Zip the wpoven-plugin-switcher
         run: |
           mkdir -p releases
-          zip -r releases/folder.zip source || exit 1  # Add error checking
+          zip -r releases/wpoven-plugin-switcher.zip source  # Replace 'wpoven-plugin-switcher' with the actual wpoven-plugin-switcher
 
       - name: Create GitHub Release
-        id: create_release  # Fixed ID name
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}  # Removed plural
-          body: |
-            Release for version ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
 
@@ -44,7 +42,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Fixed step ID reference
-          asset_path: ./releases/folder.zip
-          asset_name: folder.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./releases/wpoven-plugin-switcher.zip
+          asset_name: wpoven-plugin-switcher.zip
           asset_content_type: application/zip
