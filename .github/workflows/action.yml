@@ -24,6 +24,7 @@ jobs:
           # If you want to zip the entire repository except releases folder:
           # zip -r releases/release-$(date +'%Y%m%d_%H%M%S').zip . -x "*.git*" ".github/workflows/*" "releases/*"
 
+
       - name: Commit and push if there are changes
         run: |
           git config --local user.email "action@github.com"
