@@ -1,4 +1,4 @@
-name: Create Zip Release
+name: Create Zip in Releases Folder
 on:
   push:
     branches:
@@ -8,29 +8,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: # Add explicit permissions
+    permissions:
       contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: List files before zip
-        run: ls -la
+      - name: Create releases directory if it doesn't exist
+        run: mkdir -p releases
 
       - name: Create zip file
         run: |
-          zip -r release.zip . -x "*.git*" ".github/workflows/*"
-          # Verify zip was created
-          ls -la release.zip
+          # Create a zip file of source folder (change 'source' to your folder name)
+          zip -r releases/release-$(date +'%Y%m%d_%H%M%S').zip source/ -x "*.git*"
+          # If you want to zip the entire repository except releases folder:
+          # zip -r releases/release-$(date +'%Y%m%d_%H%M%S').zip . -x "*.git*" ".github/workflows/*" "releases/*"
 
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release.zip
-          tag_name: release-${{ github.run_number }}
-          name: Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push if there are changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add releases/
+          git commit -m "Add new release zip file" || echo "No changes to commit"
+          git push
