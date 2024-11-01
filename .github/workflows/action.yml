@@ -24,7 +24,7 @@ jobs:
       - name: Zip the folder
         run: |
           mkdir -p releases
-          zip -r releases/folder.zip sources  # Replace 'your-folder-name' with the actual folder
+          zip -r releases/folder.zip source  # Replace 'your-folder-name' with the actual folder
 
       - name: Create GitHub Releases
         id: create_releases
