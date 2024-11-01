@@ -1,0 +1,48 @@
+name: "action"
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - "releases/*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js (if needed)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Or the version you need
+
+      - name: Zip the folder
+        run: |
+          mkdir -p releases
+          zip -r releases/folder.zip source  # Replace 'your-folder-name' with the actual folder
+
+      - name: Create GitHub Releases
+        id: create_releases
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Releases ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./releases/folder.zip
+          asset_name: folder.zip
+          asset_content_type: application/zip
