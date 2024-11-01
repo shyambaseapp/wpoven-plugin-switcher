@@ -10,10 +10,6 @@ on:
 
 jobs:
   release:
-    # # Only run this job on push events to releases/* branches
-    # if: startsWith(github.ref, 'refs/heads/releases/')
-    # runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
