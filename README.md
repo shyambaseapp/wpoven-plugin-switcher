@@ -1,5 +1,5 @@
 # WPOven Plugin Switcher
-![Action Status](https://github.com/shyambaseapp/repository/actions/workflows/action.yml/badge.svg)
+![Action Status](https://github.com/shyambaseapp/wpoven-plugin-switcher/actions/workflows/action.yml/badge.svg)
 
 **Contributors:** [WPOven](https://www.wpoven.com/)  
 **Requires at least:** 6.6.2  
