@@ -1,5 +1,9 @@
 # WPOven Plugin Switcher
 ![Action Status](https://github.com/shyambaseapp/wpoven-plugin-switcher/actions/workflows/action.yml/badge.svg)
+![php Status](https://github.com/shyambaseapp/wpoven-plugin-switcher/actions/workflows/php.yml/badge.svg)
+![node Status](https://github.com/shyambaseapp/wpoven-plugin-switcher/actions/workflows/node.js.yml/badge.svg)
+![eslint Status](https://github.com/shyambaseapp/wpoven-plugin-switcher/actions/workflows/eslint.yml/badge.svg)
+![codescan Status](https://github.com/shyambaseapp/wpoven-plugin-switcher/actions/workflows/codescan.yml/badge.svg)
 
 **Contributors:** [WPOven](https://www.wpoven.com/)  
 **Requires at least:** 6.6.2  
